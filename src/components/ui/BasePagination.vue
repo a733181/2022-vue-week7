@@ -55,14 +55,24 @@ export default {
     },
     changePage(number) {
       this.$store.dispatch('pagination/setCurrentPage', number);
+      this.toTop();
     },
     previousPage() {
       const previousPage = this.currentPage - 1;
       this.$store.dispatch('pagination/setCurrentPage', previousPage);
+      this.toTop();
     },
     nextPage() {
       const nextPage = this.currentPage + 1;
       this.$store.dispatch('pagination/setCurrentPage', nextPage);
+      this.toTop();
+    },
+    toTop() {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth',
+      });
     },
   },
 };

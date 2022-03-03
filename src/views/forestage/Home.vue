@@ -55,15 +55,34 @@
     </div>
   </div>
   <div class="container px-4 mx-auto">
-    <product-more title="熱銷商品" :product-data="productsData"></product-more>
+    <product-more
+      title="熱銷商品"
+      :product-data="productsData"
+      @add-cart-id="addCart"
+    ></product-more>
   </div>
+  <base-dialog :show="!!addCartMessage" title="已加入購物車" @close="closeAddCartMessage">
+    <add-cart-product :product="addCartProduct" :quantity="productQuantity"></add-cart-product>
+  </base-dialog>
+  <base-loading :show="isLoading"></base-loading>
+  <base-dialog :show="!!error" title="Error" @close="closeError">{{ error }}</base-dialog>
 </template>
 
 <script>
 import ProductMore from '../../components/forestage/product/ProductMore.vue';
+import AddCartProduct from '../../components/forestage/product/AddCartProduct.vue';
 
 export default {
-  components: { ProductMore },
+  components: { ProductMore, AddCartProduct },
+  data() {
+    return {
+      addCartMessage: '',
+      addCartProduct: {},
+      productQuantity: 1,
+      isLoading: false,
+      error: null,
+    };
+  },
   computed: {
     productsData() {
       return this.$store.getters['forestageProducts/productsData'];
@@ -79,6 +98,31 @@ export default {
       } finally {
         this.isLoading = false;
       }
+    },
+    async addCart(id) {
+      try {
+        this.isLoading = true;
+        const data = {
+          data: {
+            product_id: id,
+            qty: this.productQuantity,
+          },
+        };
+        await this.$store.dispatch('forestageCart/addCart', data);
+        this.addCartMessage = this.$store.getters['forestageCart/addCart'];
+
+        [this.addCartProduct] = this.productsData.filter((item) => item.id === id);
+      } catch (err) {
+        this.error = err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    closeAddCartMessage() {
+      this.addCartMessage = '';
+    },
+    closeError() {
+      this.error = null;
     },
   },
   mounted() {
